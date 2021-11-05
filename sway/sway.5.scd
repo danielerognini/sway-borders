@@ -430,7 +430,7 @@ runtime.
 	a keyboard shortcuts inhibitor is active for the currently focused
 	window. Such inhibitors are usually requested by remote desktop and
 	virtualization software to enable the user to send keyboard shortcuts
-	to the remote or virtual session. The _--inhibited_ flag allows to
+	to the remote or virtual session. The _--inhibited_ flag allows one to
 	define bindings which will be exempt from pass-through to such
 	software. The same preference logic as for _--locked_ applies.
 
@@ -661,9 +661,9 @@ The default colors are:
 *force_display_urgency_hint* <timeout> [ms]
 	If an application on another workspace sets an urgency hint, switching to this
 	workspace may lead to immediate focus of the application, which also means the
-	window decoration color would be immediately resetted to *client.focused*. This
+	window decoration color would be immediately reset to *client.focused*. This
 	may make it unnecessarily hard to tell which window originally raised the
-	event. This option allows to set a _timeout_ in ms to delay the urgency hint reset.
+	event. This option allows one to set a _timeout_ in ms to delay the urgency hint reset.
 
 *titlebar_border_thickness* <thickness>
 	Thickness of the titlebar border in pixels
@@ -716,9 +716,10 @@ The default colors are:
 	borders will only be enabled if the workspace has more than one visible
 	child and gaps equal to zero.
 
-*smart_gaps* on|off
+*smart_gaps* on|off|toggle|inverse_outer
 	If smart_gaps are _on_ gaps will only be enabled if a workspace has more
-	than one child.
+	than one child. If smart_gaps are _inverse_outer_ outer gaps will only
+	be enabled if a workspace has exactly one child.
 
 *mark* --add|--replace [--toggle] <identifier>
 	Marks are arbitrary labels that can be used to identify certain windows and
