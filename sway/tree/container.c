@@ -382,19 +382,17 @@ struct sway_container *tiling_container_at(struct sway_node *parent,
 }
 
 static bool surface_is_popup(struct wlr_surface *surface) {
-	if (wlr_surface_is_xdg_surface(surface)) {
-		struct wlr_xdg_surface *xdg_surface =
-			wlr_xdg_surface_from_wlr_surface(surface);
-		while (xdg_surface && xdg_surface->role != WLR_XDG_SURFACE_ROLE_NONE) {
-			if (xdg_surface->role == WLR_XDG_SURFACE_ROLE_POPUP) {
-				return true;
-			}
-			xdg_surface = xdg_surface->toplevel->parent;
+	while (!wlr_surface_is_xdg_surface(surface)) {
+		if (!wlr_surface_is_subsurface(surface)) {
+			return false;
 		}
-		return false;
+		struct wlr_subsurface *subsurface =
+			wlr_subsurface_from_wlr_surface(surface);
+		surface = subsurface->parent;
 	}
-
-	return false;
+	struct wlr_xdg_surface *xdg_surface =
+		wlr_xdg_surface_from_wlr_surface(surface);
+	return xdg_surface->role == WLR_XDG_SURFACE_ROLE_POPUP;
 }
 
 struct sway_container *container_at(struct sway_workspace *workspace,
@@ -549,8 +547,7 @@ static void render_titlebar_text_texture(struct sway_output *output,
 	cairo_surface_flush(surface);
 	unsigned char *data = cairo_image_surface_get_data(surface);
 	int stride = cairo_image_surface_get_stride(surface);
-	struct wlr_renderer *renderer = wlr_backend_get_renderer(
-			output->wlr_output->backend);
+	struct wlr_renderer *renderer = output->wlr_output->renderer;
 	*texture = wlr_texture_from_pixels(
 			renderer, DRM_FORMAT_ARGB8888, stride, width, height, data);
 
