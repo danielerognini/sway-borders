@@ -37,11 +37,11 @@ endif
 
 jsonc = dependency('json-c', version: '>=0.13')
 pcre = dependency('libpcre')
-wayland_server = dependency('wayland-server')
+wayland_server = dependency('wayland-server', version: '>=1.20.0')
 wayland_client = dependency('wayland-client')
 wayland_cursor = dependency('wayland-cursor')
 wayland_egl = dependency('wayland-egl')
-wayland_protos = dependency('wayland-protocols', version: '>=1.14')
+wayland_protos = dependency('wayland-protocols', version: '>=1.24')
 xkbcommon = dependency('xkbcommon')
 cairo = dependency('cairo')
 pango = dependency('pango')
@@ -61,7 +61,7 @@ math = cc.find_library('m')
 rt = cc.find_library('rt')
 
 # Try first to find wlroots as a subproject, then as a system dependency
-wlroots_version = ['>=0.15.0', '<0.16.0']
+wlroots_version = ['>=0.16.0', '<0.17.0']
 wlroots_proj = subproject(
 	'wlroots',
 	default_options: ['examples=false'],

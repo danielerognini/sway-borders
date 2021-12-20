@@ -555,6 +555,7 @@ struct sway_config {
 	struct {
 		struct border_colors focused;
 		struct border_colors focused_inactive;
+		struct border_colors focused_tab_title;
 		struct border_colors unfocused;
 		struct border_colors urgent;
 		struct border_colors placeholder;
@@ -568,6 +569,8 @@ struct sway_config {
 		struct border_textures unfocused;
 		struct border_textures urgent;
 	} border_textures;
+
+	bool has_focused_tab_title;
 
 	// floating view
 	int32_t floating_maximum_width;

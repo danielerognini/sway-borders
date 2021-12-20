@@ -116,6 +116,7 @@ sway_cmd cmd_border_images_urgent;
 sway_cmd cmd_client_noop;
 sway_cmd cmd_client_focused;
 sway_cmd cmd_client_focused_inactive;
+sway_cmd cmd_client_focused_tab_title;
 sway_cmd cmd_client_unfocused;
 sway_cmd cmd_client_urgent;
 sway_cmd cmd_client_placeholder;

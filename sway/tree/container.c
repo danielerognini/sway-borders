@@ -5,8 +5,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <sys/stat.h>
 #include <wayland-server-core.h>
+#include <wlr/types/wlr_linux_dmabuf_v1.h>
 #include <wlr/types/wlr_output_layout.h>
+#include <wlr/render/drm_format_set.h>
+#include "linux-dmabuf-unstable-v1-protocol.h"
 #include "cairo_util.h"
 #include "pango.h"
 #include "sway/config.h"
@@ -64,6 +68,7 @@ void container_destroy(struct sway_container *con) {
 	wlr_texture_destroy(con->title_focused_inactive);
 	wlr_texture_destroy(con->title_unfocused);
 	wlr_texture_destroy(con->title_urgent);
+	wlr_texture_destroy(con->title_focused_tab_title);
 	list_free(con->pending.children);
 	list_free(con->current.children);
 	list_free(con->outputs);
@@ -73,6 +78,7 @@ void container_destroy(struct sway_container *con) {
 	wlr_texture_destroy(con->marks_focused_inactive);
 	wlr_texture_destroy(con->marks_unfocused);
 	wlr_texture_destroy(con->marks_urgent);
+	wlr_texture_destroy(con->marks_focused_tab_title);
 
 	if (con->view) {
 		if (con->view->container == con) {
@@ -583,6 +589,8 @@ void container_update_title_textures(struct sway_container *container) {
 			&config->border_colors.unfocused);
 	update_title_texture(container, &container->title_urgent,
 			&config->border_colors.urgent);
+	update_title_texture(container, &container->title_focused_tab_title,
+			&config->border_colors.focused_tab_title);
 	container_damage_whole(container);
 }
 
@@ -1056,6 +1064,16 @@ void container_end_mouse_operation(struct sway_container *container) {
 	}
 }
 
+static bool devid_from_fd(int fd, dev_t *devid) {
+	struct stat stat;
+	if (fstat(fd, &stat) != 0) {
+		sway_log_errno(SWAY_ERROR, "fstat failed");
+		return false;
+	}
+	*devid = stat.st_rdev;
+	return true;
+}
+
 static void set_fullscreen(struct sway_container *con, bool enable) {
 	if (!con->view) {
 		return;
@@ -1067,6 +1085,75 @@ static void set_fullscreen(struct sway_container *con, bool enable) {
 				con->view->foreign_toplevel, enable);
 		}
 	}
+
+	if (!server.linux_dmabuf_v1 || !con->view->surface) {
+		return;
+	}
+	if (!enable) {
+		wlr_linux_dmabuf_v1_set_surface_feedback(server.linux_dmabuf_v1,
+			con->view->surface, NULL);
+		return;
+	}
+
+	if (!con->pending.workspace || !con->pending.workspace->output) {
+		return;
+	}
+
+	struct sway_output *output = con->pending.workspace->output;
+	struct wlr_output *wlr_output = output->wlr_output;
+
+	// TODO: add wlroots helpers for all of this stuff
+
+	const struct wlr_drm_format_set *renderer_formats =
+		wlr_renderer_get_dmabuf_texture_formats(server.renderer);
+	assert(renderer_formats);
+
+	int renderer_drm_fd = wlr_renderer_get_drm_fd(server.renderer);
+	int backend_drm_fd = wlr_backend_get_drm_fd(wlr_output->backend);
+	if (renderer_drm_fd < 0 || backend_drm_fd < 0) {
+		return;
+	}
+
+	dev_t render_dev, scanout_dev;
+	if (!devid_from_fd(renderer_drm_fd, &render_dev) ||
+			!devid_from_fd(backend_drm_fd, &scanout_dev)) {
+		return;
+	}
+
+	const struct wlr_drm_format_set *output_formats =
+		wlr_output_get_primary_formats(output->wlr_output,
+		WLR_BUFFER_CAP_DMABUF);
+	if (!output_formats) {
+		return;
+	}
+
+	struct wlr_drm_format_set scanout_formats = {0};
+	if (!wlr_drm_format_set_intersect(&scanout_formats,
+			output_formats, renderer_formats)) {
+		return;
+	}
+
+	struct wlr_linux_dmabuf_feedback_v1_tranche tranches[] = {
+		{
+			.target_device = scanout_dev,
+			.flags = ZWP_LINUX_DMABUF_FEEDBACK_V1_TRANCHE_FLAGS_SCANOUT,
+			.formats = &scanout_formats,
+		},
+		{
+			.target_device = render_dev,
+			.formats = renderer_formats,
+		},
+	};
+
+	const struct wlr_linux_dmabuf_feedback_v1 feedback = {
+		.main_device = render_dev,
+		.tranches = tranches,
+		.tranches_len = sizeof(tranches) / sizeof(tranches[0]),
+	};
+	wlr_linux_dmabuf_v1_set_surface_feedback(server.linux_dmabuf_v1,
+		con->view->surface, &feedback);
+
+	wlr_drm_format_set_finish(&scanout_formats);
 }
 
 static void container_fullscreen_workspace(struct sway_container *con) {
@@ -1644,6 +1731,8 @@ void container_update_marks_textures(struct sway_container *con) {
 			&config->border_colors.unfocused);
 	update_marks_texture(con, &con->marks_urgent,
 			&config->border_colors.urgent);
+	update_marks_texture(con, &con->marks_focused_tab_title,
+			&config->border_colors.focused_tab_title);
 	container_damage_whole(con);
 }
 
