@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <wlr/types/wlr_pointer_constraints_v1.h>
 #include <wlr/types/wlr_pointer_gestures_v1.h>
-#include <wlr/types/wlr_surface.h>
+#include <wlr/types/wlr_compositor.h>
 #include "sway/input/seat.h"
 #include "config.h"
 
@@ -42,6 +42,8 @@ struct sway_cursor {
 	struct wl_listener swipe_begin;
 	struct wl_listener swipe_update;
 	struct wl_listener swipe_end;
+	struct wl_listener hold_begin;
+	struct wl_listener hold_end;
 
 	struct wl_listener motion;
 	struct wl_listener motion_absolute;

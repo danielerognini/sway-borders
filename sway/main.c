@@ -153,6 +153,9 @@ static void log_kernel(void) {
 
 static bool drop_permissions(void) {
 	if (getuid() != geteuid() || getgid() != getegid()) {
+		sway_log(SWAY_ERROR, "!!! DEPRECATION WARNING: "
+			"SUID privilege drop will be removed in a future release, please migrate to seatd-launch");
+
 		// Set the gid and uid in the correct order.
 		if (setgid(getgid()) != 0) {
 			sway_log(SWAY_ERROR, "Unable to drop root group, refusing to start");
@@ -238,7 +241,7 @@ static void handle_wlr_log(enum wlr_log_importance importance,
 }
 
 int main(int argc, char **argv) {
-	static int verbose = 0, debug = 0, validate = 0, allow_unsupported_gpu = 0;
+	static bool verbose = false, debug = false, validate = false, allow_unsupported_gpu = false;
 
 	static const struct option long_options[] = {
 		{"help", no_argument, NULL, 'h'},
@@ -283,23 +286,23 @@ int main(int argc, char **argv) {
 			config_path = strdup(optarg);
 			break;
 		case 'C': // validate
-			validate = 1;
+			validate = true;
 			break;
 		case 'd': // debug
-			debug = 1;
+			debug = true;
 			break;
 		case 'D': // extended debug options
 			enable_debug_flag(optarg);
 			break;
 		case 'u':
-			allow_unsupported_gpu = 1;
+			allow_unsupported_gpu = true;
 			break;
 		case 'v': // version
 			printf("sway version " SWAY_VERSION "\n");
 			exit(EXIT_SUCCESS);
 			break;
 		case 'V': // verbose
-			verbose = 1;
+			verbose = true;
 			break;
 		case 'p': ; // --get-socketpath
 			if (getenv("SWAYSOCK")) {

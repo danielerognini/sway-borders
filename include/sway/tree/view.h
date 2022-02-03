@@ -1,7 +1,7 @@
 #ifndef _SWAY_VIEW_H
 #define _SWAY_VIEW_H
 #include <wayland-server-core.h>
-#include <wlr/types/wlr_surface.h>
+#include <wlr/types/wlr_compositor.h>
 #include "config.h"
 #if HAVE_XWAYLAND
 #include <wlr/xwayland.h>
@@ -169,6 +169,7 @@ struct sway_xwayland_unmanaged {
 
 	int lx, ly;
 
+	struct wl_listener request_activate;
 	struct wl_listener request_configure;
 	struct wl_listener request_fullscreen;
 	struct wl_listener commit;

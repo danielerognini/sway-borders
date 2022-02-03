@@ -9,6 +9,7 @@
 #include <wayland-server-core.h>
 #include <wlr/types/wlr_linux_dmabuf_v1.h>
 #include <wlr/types/wlr_output_layout.h>
+#include <wlr/types/wlr_subcompositor.h>
 #include <wlr/render/drm_format_set.h>
 #include "linux-dmabuf-unstable-v1-protocol.h"
 #include "cairo_util.h"
@@ -80,10 +81,8 @@ void container_destroy(struct sway_container *con) {
 	wlr_texture_destroy(con->marks_urgent);
 	wlr_texture_destroy(con->marks_focused_tab_title);
 
-	if (con->view) {
-		if (con->view->container == con) {
-			con->view->container = NULL;
-		}
+	if (con->view && con->view->container == con) {
+		con->view->container = NULL;
 		if (con->view->destroying) {
 			view_destroy(con->view);
 		}
@@ -536,6 +535,13 @@ static void render_titlebar_text_texture(struct sway_output *output,
 
 	cairo_surface_t *surface = cairo_image_surface_create(
 			CAIRO_FORMAT_ARGB32, width, height);
+	cairo_status_t status = cairo_surface_status(surface);
+	if (status != CAIRO_STATUS_SUCCESS) {
+		sway_log(SWAY_ERROR, "cairo_image_surface_create failed: %s",
+			cairo_status_to_string(status));
+		return;
+	}
+
 	cairo_t *cairo = cairo_create(surface);
 	cairo_set_antialias(cairo, CAIRO_ANTIALIAS_BEST);
 	cairo_set_font_options(cairo, fo);
@@ -690,12 +696,13 @@ void floating_calculate_constraints(int *min_width, int *max_width,
 		*min_height = config->floating_minimum_height;
 	}
 
-	struct wlr_box *box = wlr_output_layout_get_box(root->output_layout, NULL);
+	struct wlr_box box;
+	wlr_output_layout_get_box(root->output_layout, NULL, &box);
 
 	if (config->floating_maximum_width == -1) { // no maximum
 		*max_width = INT_MAX;
 	} else if (config->floating_maximum_width == 0) { // automatic
-		*max_width = box->width;
+		*max_width = box.width;
 	} else {
 		*max_width = config->floating_maximum_width;
 	}
@@ -703,7 +710,7 @@ void floating_calculate_constraints(int *min_width, int *max_width,
 	if (config->floating_maximum_height == -1) { // no maximum
 		*max_height = INT_MAX;
 	} else if (config->floating_maximum_height == 0) { // automatic
-		*max_height = box->height;
+		*max_height = box.height;
 	} else {
 		*max_height = config->floating_maximum_height;
 	}
@@ -735,9 +742,9 @@ void container_floating_resize_and_center(struct sway_container *con) {
 		return;
 	}
 
-	struct wlr_box *ob = wlr_output_layout_get_box(root->output_layout,
-			ws->output->wlr_output);
-	if (!ob) {
+	struct wlr_box ob;
+	wlr_output_layout_get_box(root->output_layout, ws->output->wlr_output, &ob);
+	if (wlr_box_empty(&ob)) {
 		// On NOOP output. Will be called again when moved to an output
 		con->pending.x = 0;
 		con->pending.y = 0;
@@ -749,8 +756,8 @@ void container_floating_resize_and_center(struct sway_container *con) {
 	floating_natural_resize(con);
 	if (!con->view) {
 		if (con->pending.width > ws->width || con->pending.height > ws->height) {
-			con->pending.x = ob->x + (ob->width - con->pending.width) / 2;
-			con->pending.y = ob->y + (ob->height - con->pending.height) / 2;
+			con->pending.x = ob.x + (ob.width - con->pending.width) / 2;
+			con->pending.y = ob.y + (ob.height - con->pending.height) / 2;
 		} else {
 			con->pending.x = ws->x + (ws->width - con->pending.width) / 2;
 			con->pending.y = ws->y + (ws->height - con->pending.height) / 2;
@@ -758,8 +765,8 @@ void container_floating_resize_and_center(struct sway_container *con) {
 	} else {
 		if (con->pending.content_width > ws->width
 				|| con->pending.content_height > ws->height) {
-			con->pending.content_x = ob->x + (ob->width - con->pending.content_width) / 2;
-			con->pending.content_y = ob->y + (ob->height - con->pending.content_height) / 2;
+			con->pending.content_x = ob.x + (ob.width - con->pending.content_width) / 2;
+			con->pending.content_y = ob.y + (ob.height - con->pending.content_height) / 2;
 		} else {
 			con->pending.content_x = ws->x + (ws->width - con->pending.content_width) / 2;
 			con->pending.content_y = ws->y + (ws->height - con->pending.content_height) / 2;
