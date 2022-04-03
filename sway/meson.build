@@ -214,7 +214,7 @@ sway_deps = [
 	libudev,
 	math,
 	pango,
-	pcre,
+	pcre2,
 	glesv2,
 	pixman,
 	server_protos,
