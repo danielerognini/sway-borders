@@ -25,6 +25,7 @@
 #include "sway/layers.h"
 #include "sway/output.h"
 #include "sway/server.h"
+#include "sway/renderer.h"
 #include "sway/surface.h"
 #include "sway/tree/arrange.h"
 #include "sway/tree/container.h"
@@ -891,7 +892,7 @@ void handle_new_output(struct wl_listener *listener, void *data) {
 	}
 
 	if (!wlr_output_init_render(wlr_output, server->allocator,
-			server->renderer)) {
+			server->renderer->wlr_renderer)) {
 		sway_log(SWAY_ERROR, "Failed to init output render");
 		return;
 	}

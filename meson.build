@@ -14,6 +14,7 @@ project(
 add_project_arguments(
 	[
 		'-DWLR_USE_UNSTABLE',
+		'-DSWAY_CUSTOM_RENDERER',
 
 		'-Wno-unused-parameter',
 		'-Wno-unused-result',

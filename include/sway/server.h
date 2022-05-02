@@ -27,6 +27,7 @@
 #endif
 
 struct sway_transaction;
+struct sway_renderer;
 
 struct sway_server {
 	struct wl_display *wl_display;
@@ -36,7 +37,7 @@ struct sway_server {
 	struct wlr_backend *backend;
 	// secondary headless backend used for creating virtual outputs on-the-fly
 	struct wlr_backend *headless_backend;
-	struct wlr_renderer *renderer;
+	struct sway_renderer *renderer;
 	struct wlr_allocator *allocator;
 
 	struct wlr_compositor *compositor;

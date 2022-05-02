@@ -22,6 +22,7 @@
 #include "sway/layers.h"
 #include "sway/output.h"
 #include "sway/server.h"
+#include "sway/renderer.h"
 #include "sway/tree/arrange.h"
 #include "sway/tree/container.h"
 #include "sway/tree/root.h"
@@ -98,7 +99,7 @@ static void set_scale_filter(struct wlr_output *wlr_output,
 
 static void render_texture(struct wlr_output *wlr_output,
 		pixman_region32_t *output_damage, struct wlr_texture *texture,
-		const struct wlr_fbox *src_box, const struct wlr_box *dst_box,
+		const struct wlr_fbox *src_box, struct wlr_box *dst_box,
 		const float matrix[static 9], float alpha) {
 	struct wlr_renderer *renderer = wlr_output->renderer;
 	struct sway_output *output = wlr_output->data;
@@ -1027,7 +1028,7 @@ static void render_seatops(struct sway_output *output,
 void output_render(struct sway_output *output, struct timespec *when,
 		pixman_region32_t *damage) {
 	struct wlr_output *wlr_output = output->wlr_output;
-	struct wlr_renderer *renderer = output->server->renderer;
+	struct wlr_renderer *renderer = output->server->renderer->wlr_renderer;
 
 	struct sway_workspace *workspace = output->current.active_workspace;
 	if (workspace == NULL) {
