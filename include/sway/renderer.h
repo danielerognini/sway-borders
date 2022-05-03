@@ -28,7 +28,6 @@ struct sway_renderer_shader {
     GLint padding_r;
     GLint padding_b;
     GLint cornerradius;
-    GLint lock_perc;
 };
 
 #endif
@@ -58,11 +57,12 @@ void sway_renderer_begin(struct sway_renderer *renderer, struct sway_output *out
 void sway_renderer_end(struct sway_renderer *renderer, pixman_region32_t *damage,
                      struct sway_output *output);
 void sway_renderer_render_texture_at(struct sway_renderer *renderer,
+                                   struct sway_output *output,
                                    pixman_region32_t *damage,
                                    struct wlr_texture *texture,
                                    struct wlr_box *box, double opacity,
                                    struct wlr_box *mask,
-                                   double corner_radius, double lock_perc);
+                                   double corner_radius);
 
 
 #endif

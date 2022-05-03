@@ -163,8 +163,18 @@ static void render_surface_iterator(struct sway_output *output,
 	}
 	scale_box(&dst_box, wlr_output->scale);
 
-	render_texture(wlr_output, output_damage, texture,
-		&src_box, &dst_box, matrix, alpha);
+	struct wlr_box mask = {
+		.x = dst_box.x - 0,
+		.y = dst_box.y - 0,
+		.width = dst_box.width + 0,
+		.height = dst_box.height + 0 
+	};
+	//sway_log(SWAY_ERROR, "bla");
+	assert(output->server->renderer);
+	sway_renderer_render_texture_at(server.renderer, output, output_damage, texture,
+			&dst_box, alpha, &mask, 10);
+	//render_texture(wlr_output, output_damage, texture,
+	//	&src_box, &dst_box, matrix, alpha);
 
 	wlr_presentation_surface_sampled_on_output(server.presentation, surface,
 		wlr_output);
