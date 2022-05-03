@@ -14,7 +14,6 @@ struct sway_output;
 struct sway_renderer_shader {
     GLuint shader;
     GLint proj;
-    GLint invert_y;
     GLint tex;
     GLint alpha;
     GLint pos_attrib;

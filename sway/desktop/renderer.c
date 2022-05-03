@@ -16,18 +16,13 @@
 
 const GLchar custom_tex_vertex_src[] =
 "uniform mat3 proj;\n"
-"uniform bool invert_y;\n"
 "attribute vec2 pos;\n"
 "attribute vec2 texcoord;\n"
 "varying vec2 v_texcoord;\n"
 "\n"
 "void main() {\n"
 "	gl_Position = vec4(proj * vec3(pos, 1.0), 1.0);\n"
-"	if (invert_y) {\n"
-"		v_texcoord = vec2(texcoord.x, 1.0 - texcoord.y);\n"
-"	} else {\n"
-"		v_texcoord = texcoord;\n"
-"	}\n"
+"	v_texcoord = texcoord;\n"
 "}\n";
 
 
@@ -301,8 +296,6 @@ static bool render_subtexture_with_matrix(
 	glUseProgram(shader->shader);
 
 	glUniformMatrix3fv(shader->proj, 1, GL_FALSE, gl_matrix);
-	//glUniform1i(shader->invert_y, texture->inverted_y);
-	glUniform1i(shader->invert_y, false);
 	glUniform1i(shader->tex, 0);
 	glUniform1f(shader->alpha, alpha);
 	glUniform1f(shader->width, display_box->width);
@@ -368,7 +361,6 @@ void sway_renderer_init(struct sway_renderer* renderer, struct sway_server* serv
 	assert(renderer->shader_rgba.shader);
 
 	renderer->shader_rgba.proj = glGetUniformLocation(renderer->shader_rgba.shader, "proj");
-	renderer->shader_rgba.invert_y = glGetUniformLocation(renderer->shader_rgba.shader, "invert_y");
 	renderer->shader_rgba.tex = glGetUniformLocation(renderer->shader_rgba.shader, "tex");
 	renderer->shader_rgba.alpha = glGetUniformLocation(renderer->shader_rgba.shader, "alpha");
 	renderer->shader_rgba.width = glGetUniformLocation(renderer->shader_rgba.shader, "width");
@@ -388,7 +380,6 @@ void sway_renderer_init(struct sway_renderer* renderer, struct sway_server* serv
 	assert(renderer->shader_rgbx.shader);
 
 	renderer->shader_rgbx.proj = glGetUniformLocation(renderer->shader_rgbx.shader, "proj");
-	renderer->shader_rgbx.invert_y = glGetUniformLocation(renderer->shader_rgbx.shader, "invert_y");
 	renderer->shader_rgbx.tex = glGetUniformLocation(renderer->shader_rgbx.shader, "tex");
 	renderer->shader_rgbx.alpha = glGetUniformLocation(renderer->shader_rgbx.shader, "alpha");
 	renderer->shader_rgbx.width = glGetUniformLocation(renderer->shader_rgbx.shader, "width");
@@ -409,7 +400,6 @@ void sway_renderer_init(struct sway_renderer* renderer, struct sway_server* serv
 		assert(renderer->shader_ext.shader);
 
 		renderer->shader_ext.proj = glGetUniformLocation(renderer->shader_ext.shader, "proj");
-		renderer->shader_ext.invert_y = glGetUniformLocation(renderer->shader_ext.shader, "invert_y");
 		renderer->shader_ext.tex = glGetUniformLocation(renderer->shader_ext.shader, "tex");
 		renderer->shader_ext.alpha = glGetUniformLocation(renderer->shader_ext.shader, "alpha");
 		renderer->shader_ext.width = glGetUniformLocation(renderer->shader_ext.shader, "width");
