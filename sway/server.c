@@ -72,6 +72,8 @@ static void handle_drm_lease_request(struct wl_listener *listener, void *data) {
 	}
 }
 
+#define SWAY_XDG_SHELL_VERSION	2
+
 bool server_init(struct sway_server *server) {
 	sway_log(SWAY_DEBUG, "Initializing Wayland server");
 
@@ -126,7 +128,8 @@ bool server_init(struct sway_server *server) {
 		&server->layer_shell_surface);
 	server->layer_shell_surface.notify = handle_layer_shell_surface;
 
-	server->xdg_shell = wlr_xdg_shell_create(server->wl_display);
+	server->xdg_shell = wlr_xdg_shell_create(server->wl_display,
+		SWAY_XDG_SHELL_VERSION);
 	wl_signal_add(&server->xdg_shell->events.new_surface,
 		&server->xdg_shell_surface);
 	server->xdg_shell_surface.notify = handle_xdg_shell_surface;
@@ -182,6 +185,8 @@ bool server_init(struct sway_server *server) {
 	server->text_input = wlr_text_input_manager_v3_create(server->wl_display);
 	server->foreign_toplevel_manager =
 		wlr_foreign_toplevel_manager_v1_create(server->wl_display);
+
+	sway_session_lock_init();
 
 	server->drm_lease_manager=
 		wlr_drm_lease_v1_manager_create(server->wl_display, server->backend);
