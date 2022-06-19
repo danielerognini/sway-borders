@@ -41,7 +41,10 @@ const GLchar custom_tex_fragment_src_rgba[] =
 "uniform float cornerradius;\n"
 "\n"
 "void main() {\n"
-"   if(v_texcoord.x*width < padding_l) discard;\n"
+"   if (v_texcoord.x < 0.1) {\n"
+"       gl_FragColor = vec4(0, 1, 0, 1);\n"
+"       return;\n"
+"   }\n"
 "   if(v_texcoord.x*width < 2.0 && v_texcoord.y*height > cornerradius && v_texcoord.y*height < height - cornerradius) {\n"
 "       gl_FragColor = vec4(1, 0, 0, 1);\n"
 "       return;\n"
@@ -58,7 +61,8 @@ const GLchar custom_tex_fragment_src_rgba[] =
 "       gl_FragColor = vec4(1, 0, 0, 1);\n"
 "       return;\n"
 "   }\n"
-	" if(v_texcoord.y*height < padding_t) discard;\n"
+"   if(v_texcoord.x*width < padding_l) discard;\n"
+"   if(v_texcoord.y*height < padding_t) discard;\n"
 "   if(v_texcoord.x*width > width - padding_r) discard;\n"
 "   if(v_texcoord.y*height > height - padding_b) discard;\n"
 "   if(v_texcoord.x*width < cornerradius + padding_l && v_texcoord.y*height < cornerradius + padding_t){\n"
@@ -237,10 +241,9 @@ error:
 static bool render_subtexture_with_matrix(
 		struct sway_renderer *renderer, struct wlr_texture *wlr_texture,
 		const struct wlr_fbox *box, const float matrix[static 9],
-		float alpha,
-        const struct wlr_box *display_box,
+		float alpha, const struct wlr_box *display_box,
 		double padding_l, double padding_t, double padding_r, double padding_b,
-		float corner_radius
+		float corner_radius, unsigned char *data
         ) {
 	struct wlr_gles2_renderer *gles2_renderer =
 		gles2_get_renderer(renderer->wlr_renderer);
@@ -272,8 +275,8 @@ static bool render_subtexture_with_matrix(
 	}
 
 	float gl_matrix[9];
-    wlr_matrix_multiply(gl_matrix, gles2_renderer->projection, matrix);
-    wlr_matrix_multiply(gl_matrix, flip_180, gl_matrix);
+	wlr_matrix_multiply(gl_matrix, gles2_renderer->projection, matrix);
+	wlr_matrix_multiply(gl_matrix, flip_180, gl_matrix);
 
 	// OpenGL ES 2 requires the glUniformMatrix3fv transpose parameter to be set
 	// to GL_FALSE
@@ -287,8 +290,24 @@ static bool render_subtexture_with_matrix(
 		glEnable(GL_BLEND);
 	}
 
-	glActiveTexture(GL_TEXTURE0);
+	/* NEW NEW NEW */
+	GLuint new_tex;
+	glGenTextures(1, &new_tex);
+	glBindTexture(GL_TEXTURE_2D, new_tex);
+
+	const struct wlr_gles2_pixel_format *fmt = get_gles2_format_from_drm(texture->drm_format);
+	//glTexImage2D(GL_TEXTURE_2D, 0, fmt->gl_format, display_box->width + 4, display_box->height + 4, 0, fmt->gl_format, fmt->gl_type, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, fmt->gl_format, display_box->width + 40, display_box->height + 40, 0, fmt->gl_format, fmt->gl_type, NULL);
+	//glTexSubImage2D(GL_TEXTURE_2D, 0, 2, 2, display_box->width, display_box->height, fmt->gl_format, fmt->gl_type, NULL);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	//glActiveTexture(GL_TEXTURE0);
+	//glBindTexture(texture->target, new_tex);
+	/* OLD OLD OLD */
+
 	glBindTexture(texture->target, texture->tex);
+	// glBindTexture(GL_TEXTURE_2D, new_tex);
 
 	glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -300,6 +319,7 @@ static bool render_subtexture_with_matrix(
 	glUniform1f(shader->alpha, alpha);
 	glUniform1f(shader->width, display_box->width);
 	glUniform1f(shader->height, display_box->height);
+	wlr_log(WLR_ERROR, "%f %f %f %f", padding_l, padding_t, padding_r, padding_b);
 	glUniform1f(shader->padding_l, padding_l);
 	glUniform1f(shader->padding_t, padding_t);
 	glUniform1f(shader->padding_r, padding_r);
@@ -333,9 +353,6 @@ static bool render_subtexture_with_matrix(
 	pop_gles2_debug(gles2_renderer);
 	return true;
 }
-
-
-
 #endif
 
 void sway_renderer_init(struct sway_renderer* renderer, struct sway_server* server){
@@ -441,7 +458,8 @@ void sway_renderer_render_texture_at(struct sway_renderer *renderer,
                                    struct wlr_texture *texture,
                                    struct wlr_box *box, double opacity,
                                    struct wlr_box *mask,
-                                   double corner_radius) {
+                                   double corner_radius,
+								   void* data) {
 
 	int ow, oh;
 	wlr_output_transformed_resolution(output->wlr_output, &ow, &oh);
@@ -485,7 +503,7 @@ void sway_renderer_render_texture_at(struct sway_renderer *renderer,
 				&fbox, matrix, opacity,
 				box,
 				mask->x - box->x, mask->y - box->y, box->x + box->width - mask->x - mask->width, box->y + box->height - mask->y - mask->height,
-				corner_radius);
+				corner_radius, data);
 #else
 		wlr_render_subtexture_with_matrix(
 				renderer->wlr_renderer,

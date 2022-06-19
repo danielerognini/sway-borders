@@ -61,7 +61,8 @@ void sway_renderer_render_texture_at(struct sway_renderer *renderer,
                                    struct wlr_texture *texture,
                                    struct wlr_box *box, double opacity,
                                    struct wlr_box *mask,
-                                   double corner_radius);
+                                   double corner_radius,
+                                   void* data);
 
 
 #endif
