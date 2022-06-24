@@ -172,18 +172,6 @@ static void render_surface_iterator(struct sway_output *output,
 	}
 	scale_box(&dst_box, wlr_output->scale);
 
-	sway_log(SWAY_ERROR, "%d,%d %dx%d _box", _box->x, _box->y, _box->width, _box->height);
-	sway_log(SWAY_ERROR, "%f,%f %fx%f src_box", src_box.x, src_box.y, src_box.width, src_box.height);
-	sway_log(SWAY_ERROR, "%d,%d %dx%d proj_box", proj_box.x, proj_box.y, proj_box.width, proj_box.height);
-	sway_log(SWAY_ERROR, "%d,%d %dx%d dst_box", dst_box.x, dst_box.y, dst_box.width, dst_box.height);
-	//sway_log(SWAY_ERROR, "%d,%d %dx%d clip_box", clip_box->x, clip_box->y, clip_box->width, clip_box->height);
-
-	//struct wlr_box mask = {
-	//	.x = dst_box.x + 50,
-	//	.y = dst_box.y + 50,
-	//	.width = dst_box.width - 100,
-	//	.height = dst_box.height - 100 
-	//};
 	struct wlr_box mask = {
 		.x = dst_box.x - 0,
 		.y = dst_box.y - 0,
@@ -192,17 +180,8 @@ static void render_surface_iterator(struct sway_output *output,
 	};
 	assert(output->server->renderer);
 
-	struct wl_shm_buffer *shm_buf = wl_shm_buffer_get(surface->resource);
-	void *pixel_data = NULL;
-	bool e = wlr_renderer_resource_is_wl_drm_buffer(renderer, surface->resource);
-	sway_log(SWAY_ERROR, "%d", e);
-	// wl_shm_buffer_begin_access(shm_buf);
-	// void *pixel_data = wl_shm_buffer_get_data(shm_buf);
 	sway_renderer_render_texture_at(server.renderer, output, output_damage, texture,
-			&dst_box, alpha, &mask, 10, pixel_data);
-	// wl_shm_buffer_end_access(shm_buf);
-	//render_texture(wlr_output, output_damage, texture,
-	//	&src_box, &dst_box, matrix, alpha);
+			&dst_box, alpha, &mask, 20);
 
 	wlr_presentation_surface_sampled_on_output(server.presentation, surface,
 		wlr_output);
