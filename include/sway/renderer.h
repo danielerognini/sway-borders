@@ -22,11 +22,9 @@ struct sway_renderer_shader {
     GLint width;
     GLint height;
 
-    GLint padding_l;
-    GLint padding_t;
-    GLint padding_r;
-    GLint padding_b;
+    GLint border_thickness;
     GLint cornerradius;
+    GLint color;
 };
 
 #endif
@@ -61,7 +59,9 @@ void sway_renderer_render_texture_at(struct sway_renderer *renderer,
                                    struct wlr_texture *texture,
                                    struct wlr_box *box, double opacity,
                                    struct wlr_box *mask,
-                                   double corner_radius);
+                                   double corner_radius,
+                                   int border_thickness,
+                                   float color[4]);
 
 
 #endif

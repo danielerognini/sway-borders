@@ -35,59 +35,36 @@ const GLchar custom_tex_fragment_src_rgba[] =
 "\n"
 "uniform float width;\n"
 "uniform float height;\n"
-"uniform float padding_l;\n"
-"uniform float padding_t;\n"
-"uniform float padding_r;\n"
-"uniform float padding_b;\n"
 "uniform float cornerradius;\n"
+"uniform float border_thickness;\n"
+"uniform vec4 color;\n"
 "\n"
 "void main() {\n"
-"   vec4 debug_color = vec4(v_texcoord.x, v_texcoord.y, 0.5, 1);\n"
-"   if(v_texcoord.x*width < 2.0 && v_texcoord.y*height > cornerradius && v_texcoord.y*height < height - cornerradius) {\n"
-"       gl_FragColor = debug_color;\n"
-"       return;\n"
-"   }\n"
-"   if(v_texcoord.x*width > width - 2.0 && v_texcoord.y*height > cornerradius && v_texcoord.y*height < height - cornerradius) {\n"
-"       gl_FragColor = debug_color;\n"
-"       return;\n"
-"   }\n"
-"   if(v_texcoord.y*height < 2.0 && v_texcoord.x*width > cornerradius && v_texcoord.x*width < width - cornerradius) {\n"
-"       gl_FragColor = debug_color;\n"
-"       return;\n"
-"   }\n"
-"   if(v_texcoord.y*height > height - 2.0 && v_texcoord.x*width > cornerradius && v_texcoord.x*width < width - cornerradius) {\n"
-"       gl_FragColor = debug_color;\n"
-"       return;\n"
-"   }\n"
-"   if(v_texcoord.x*width < padding_l) discard;\n"
-"   if(v_texcoord.y*height < padding_t) discard;\n"
-"   if(v_texcoord.x*width > width - padding_r) discard;\n"
-"   if(v_texcoord.y*height > height - padding_b) discard;\n"
-"   if(v_texcoord.x*width < cornerradius + padding_l && v_texcoord.y*height < cornerradius + padding_t){\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(cornerradius + padding_l, cornerradius + padding_t)) > cornerradius) discard;\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(cornerradius + padding_l, cornerradius + padding_t)) > cornerradius - 2.0) {\n"
-"           gl_FragColor = debug_color;\n"
+"   if(v_texcoord.x*width < cornerradius && v_texcoord.y*height < cornerradius){\n"
+"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(cornerradius, cornerradius)) > cornerradius + border_thickness) discard;\n"
+"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(cornerradius, cornerradius)) > cornerradius) {\n"
+"           gl_FragColor = color;\n"
 "           return;\n"
 "       }\n"
 "   }\n"
-"   if(v_texcoord.x*width > width - cornerradius - padding_r && v_texcoord.y*height < cornerradius + padding_t){\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(width - cornerradius - padding_r, cornerradius + padding_t)) > cornerradius) discard;\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(width - cornerradius - padding_r, cornerradius + padding_t)) > cornerradius - 2.0) {\n"
-"           gl_FragColor = debug_color;\n"
+"   if(v_texcoord.x*width > width - cornerradius && v_texcoord.y*height < cornerradius){\n"
+"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(width - cornerradius, cornerradius)) > cornerradius + border_thickness) discard;\n"
+"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(width - cornerradius, cornerradius)) > cornerradius) {\n"
+"           gl_FragColor = color;\n"
 "           return;\n"
 "       }\n"
 "   }\n"
-"   if(v_texcoord.x*width < cornerradius + padding_l && v_texcoord.y*height > height - cornerradius - padding_b){\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(cornerradius + padding_l, height - cornerradius - padding_b)) > cornerradius) discard;\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(cornerradius + padding_l, height - cornerradius - padding_b)) > cornerradius - 2.0) {\n"
-"           gl_FragColor = debug_color;\n"
+"   if(v_texcoord.x*width < cornerradius && v_texcoord.y*height > height - cornerradius){\n"
+"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(cornerradius, height - cornerradius)) > cornerradius + border_thickness) discard;\n"
+"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(cornerradius, height - cornerradius)) > cornerradius) {\n"
+"           gl_FragColor = color;\n"
 "           return;\n"
 "       }\n"
 "   }\n"
-"   if(v_texcoord.x*width > width - cornerradius - padding_r && v_texcoord.y*height > height - cornerradius - padding_b){\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(width - cornerradius - padding_r, height - cornerradius - padding_b)) > cornerradius) discard;\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(width - cornerradius - padding_r, height - cornerradius - padding_b)) > cornerradius - 2.0) {\n"
-"           gl_FragColor = debug_color;\n"
+"   if(v_texcoord.x*width > width - cornerradius && v_texcoord.y*height > height - cornerradius){\n"
+"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(width - cornerradius, height - cornerradius)) > cornerradius + border_thickness) discard;\n"
+"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(width - cornerradius, height - cornerradius)) > cornerradius) {\n"
+"           gl_FragColor = color;\n"
 "           return;\n"
 "       }\n"
 "   }\n"
@@ -104,28 +81,22 @@ const GLchar custom_tex_fragment_src_rgbx[] =
 "\n"
 "uniform float width;\n"
 "uniform float height;\n"
-"uniform float padding_l;\n"
-"uniform float padding_t;\n"
-"uniform float padding_r;\n"
-"uniform float padding_b;\n"
 "uniform float cornerradius;\n"
+"uniform float border_thickness;\n"
+"uniform vec4 color;\n"
 "\n"
 "void main() {\n"
-"   if(v_texcoord.x*width < padding_l) discard;\n"
-"   if(v_texcoord.y*height < padding_t) discard;\n"
-"   if(v_texcoord.x*width > width - padding_r) discard;\n"
-"   if(v_texcoord.y*height > height - padding_b) discard;\n"
-"   if(v_texcoord.x*width < cornerradius + padding_l && v_texcoord.y*height < cornerradius + padding_t){\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(cornerradius + padding_l, cornerradius + padding_t)) > cornerradius) discard;\n"
+"   if(v_texcoord.x*width < cornerradius && v_texcoord.y*height < cornerradius){\n"
+"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(cornerradius, cornerradius)) > cornerradius) discard;\n"
 "   }\n"
-"   if(v_texcoord.x*width > width - cornerradius - padding_r && v_texcoord.y*height < cornerradius + padding_t){\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(width - cornerradius - padding_r, cornerradius + padding_t)) > cornerradius) discard;\n"
+"   if(v_texcoord.x*width > width - cornerradius && v_texcoord.y*height < cornerradius){\n"
+"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(width - cornerradius, cornerradius)) > cornerradius) discard;\n"
 "   }\n"
-"   if(v_texcoord.x*width < cornerradius + padding_l && v_texcoord.y*height > height - cornerradius - padding_b){\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(cornerradius + padding_l, height - cornerradius - padding_b)) > cornerradius) discard;\n"
+"   if(v_texcoord.x*width < cornerradius && v_texcoord.y*height > height - cornerradius){\n"
+"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(cornerradius, height - cornerradius)) > cornerradius) discard;\n"
 "   }\n"
-"   if(v_texcoord.x*width > width - cornerradius - padding_r && v_texcoord.y*height > height - cornerradius - padding_b){\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(width - cornerradius - padding_r, height - cornerradius - padding_b)) > cornerradius) discard;\n"
+"   if(v_texcoord.x*width > width - cornerradius && v_texcoord.y*height > height - cornerradius){\n"
+"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(width - cornerradius, height - cornerradius)) > cornerradius) discard;\n"
 "   }\n"
 "	gl_FragColor = vec4(texture2D(tex, v_texcoord).rgb, 1.0) * alpha;\n"
 "}\n";
@@ -139,28 +110,21 @@ const GLchar custom_tex_fragment_src_external[] =
 "\n"
 "uniform float width;\n"
 "uniform float height;\n"
-"uniform float padding_l;\n"
-"uniform float padding_t;\n"
-"uniform float padding_r;\n"
-"uniform float padding_b;\n"
+"uniform float border_thickness;\n"
 "uniform float cornerradius;\n"
 "\n"
 "void main() {\n"
-"   if(v_texcoord.x*width < padding_l) discard;\n"
-"   if(v_texcoord.y*height < padding_t) discard;\n"
-"   if(v_texcoord.x*width > width - padding_r) discard;\n"
-"   if(v_texcoord.y*height > height - padding_b) discard;\n"
-"   if(v_texcoord.x*width < cornerradius + padding_l && v_texcoord.y*height < cornerradius + padding_t){\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(cornerradius + padding_l, cornerradius + padding_t)) > cornerradius) discard;\n"
+"   if(v_texcoord.x*width < cornerradius && v_texcoord.y*height < cornerradius){\n"
+"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(cornerradius, cornerradius)) > cornerradius) discard;\n"
 "   }\n"
-"   if(v_texcoord.x*width > width - cornerradius - padding_r && v_texcoord.y*height < cornerradius + padding_t){\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(width - cornerradius - padding_r, cornerradius + padding_t)) > cornerradius) discard;\n"
+"   if(v_texcoord.x*width > width - cornerradius && v_texcoord.y*height < cornerradius){\n"
+"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(width - cornerradius, cornerradius)) > cornerradius) discard;\n"
 "   }\n"
-"   if(v_texcoord.x*width < cornerradius + padding_l && v_texcoord.y*height > height - cornerradius - padding_b){\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(cornerradius + padding_l, height - cornerradius - padding_b)) > cornerradius) discard;\n"
+"   if(v_texcoord.x*width < cornerradius && v_texcoord.y*height > height - cornerradius){\n"
+"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(cornerradius, height - cornerradius)) > cornerradius) discard;\n"
 "   }\n"
-"   if(v_texcoord.x*width > width - cornerradius - padding_r && v_texcoord.y*height > height - cornerradius - padding_b){\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(width - cornerradius - padding_r, height - cornerradius - padding_b)) > cornerradius) discard;\n"
+"   if(v_texcoord.x*width > width - cornerradius && v_texcoord.y*height > height - cornerradius){\n"
+"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(width - cornerradius, height - cornerradius)) > cornerradius) discard;\n"
 "   }\n"
 "	gl_FragColor = texture2D(texture0, v_texcoord) * alpha;\n"
 "}\n";
@@ -174,8 +138,6 @@ static const GLfloat verts[] = {
 
 static GLuint compile_shader(struct wlr_gles2_renderer *renderer,
 		GLuint type, const GLchar *src) {
-	push_gles2_debug(renderer);
-
 	GLuint shader = glCreateShader(type);
 	glShaderSource(shader, 1, &src, NULL);
 	glCompileShader(shader);
@@ -187,14 +149,11 @@ static GLuint compile_shader(struct wlr_gles2_renderer *renderer,
 		shader = 0;
 	}
 
-	pop_gles2_debug(renderer);
 	return shader;
 }
 
 static GLuint link_program(struct wlr_gles2_renderer *renderer,
 		const GLchar *vert_src, const GLchar *frag_src) {
-	push_gles2_debug(renderer);
-
 	GLuint vert = compile_shader(renderer, GL_VERTEX_SHADER, vert_src);
 	if (!vert) {
 		goto error;
@@ -223,19 +182,69 @@ static GLuint link_program(struct wlr_gles2_renderer *renderer,
 		goto error;
 	}
 
-	pop_gles2_debug(renderer);
 	return prog;
 
 error:
 	return 0;
 }
 
+struct wlr_gles2_renderer *gles2_get_renderer(
+		struct wlr_renderer *wlr_renderer) {
+	assert(wlr_renderer_is_gles2(wlr_renderer));
+	return (struct wlr_gles2_renderer *)wlr_renderer;
+}
+
+struct wlr_gles2_texture *gles2_get_texture(
+		struct wlr_texture *wlr_texture) {
+	assert(wlr_texture_is_gles2(wlr_texture));
+	return (struct wlr_gles2_texture *)wlr_texture;
+}
+
+
+//static GLfloat points[] = {
+//	0.0f, 0.0f, 0.0f,  // 1
+//	1.0f, 0.0f, 0.0f,
+//	0.0f, 1.0f, 0.0f,
+//	1.0f, 1.0f, 0.0f,  // 2
+//	1.0f, 0.0f, 0.0f,
+//	0.0f, 1.0f, 0.0f,
+//	0.0f, 0.0f, 1.0f,  // 3
+//	1.0f, 0.0f, 1.0f,
+//	0.0f, 1.0f, 1.0f,
+//	1.0f, 1.0f, 1.0f,  // 4
+//	1.0f, 0.0f, 1.0f,
+//	0.0f, 1.0f, 1.0f,
+//	0.0f, 0.0f, 0.0f,  // 5
+//	0.0f, 0.0f, 1.0f,
+//	1.0f, 0.0f, 0.0f,
+//	1.0f, 0.0f, 1.0f,  // 6
+//	0.0f, 0.0f, 1.0f,
+//	1.0f, 0.0f, 0.0f,
+//	0.0f, 1.0f, 0.0f,  // 7
+//	0.0f, 1.0f, 1.0f,
+//	1.0f, 1.0f, 0.0f,
+//	1.0f, 1.0f, 1.0f,  // 8
+//	0.0f, 1.0f, 1.0f,
+//	1.0f, 1.0f, 0.0f,
+//	0.0f, 0.0f, 0.0f,  // 9
+//	0.0f, 0.0f, 1.0f,
+//	0.0f, 1.0f, 0.0f,
+//	0.0f, 1.0f, 1.0f,  // 10
+//	0.0f, 0.0f, 1.0f,
+//	0.0f, 1.0f, 0.0f,
+//	1.0f, 0.0f, 0.0f,  // 11
+//	1.0f, 0.0f, 1.0f,
+//	1.0f, 1.0f, 0.0f,
+//	1.0f, 1.0f, 1.0f,  // 12
+//	1.0f, 0.0f, 1.0f,
+//	1.0f, 1.0f, 0.0f,
+//};
+
 static bool render_subtexture_with_matrix(
 		struct sway_renderer *renderer, struct wlr_texture *wlr_texture,
 		const struct wlr_fbox *box, const float matrix[static 9],
 		float alpha, const struct wlr_box *display_box,
-		double padding_l, double padding_t, double padding_r, double padding_b,
-		float corner_radius) {
+		float corner_radius, int border_thickness, float color[4]) {
 	struct wlr_gles2_renderer *gles2_renderer =
 		gles2_get_renderer(renderer->wlr_renderer);
 	struct wlr_gles2_texture *texture =
@@ -272,8 +281,6 @@ static bool render_subtexture_with_matrix(
 	// to GL_FALSE
 	wlr_matrix_transpose(gl_matrix, gl_matrix);
 
-	push_gles2_debug(gles2_renderer);
-
 	if (!texture->has_alpha && alpha == 1.0) {
 		glDisable(GL_BLEND);
 	} else {
@@ -292,17 +299,15 @@ static bool render_subtexture_with_matrix(
 	glUniform1f(shader->alpha, alpha);
 	glUniform1f(shader->width, display_box->width);
 	glUniform1f(shader->height, display_box->height);
-	glUniform1f(shader->padding_l, padding_l);
-	glUniform1f(shader->padding_t, padding_t);
-	glUniform1f(shader->padding_r, padding_r);
-	glUniform1f(shader->padding_b, padding_b);
-	glUniform1f(shader->cornerradius, corner_radius);
+	glUniform1f(shader->cornerradius, corner_radius - 10);
+	glUniform1f(shader->border_thickness, border_thickness + 2);
+	glUniform4f(shader->color, color[0], color[1], color[2], color[3]);
 
-	const GLfloat x1 = box->x / wlr_texture->width;
-	const GLfloat y1 = box->y / wlr_texture->height;
-	const GLfloat x2 = (box->x + box->width) / wlr_texture->width;
-	const GLfloat y2 = (box->y + box->height) / wlr_texture->height;
-	const GLfloat texcoord[] = {
+	/*const*/ GLfloat x1 = box->x / wlr_texture->width;
+	/*const*/ GLfloat y1 = box->y / wlr_texture->height;
+	/*const*/ GLfloat x2 = (box->x + box->width) / wlr_texture->width;
+	/*const*/ GLfloat y2 = (box->y + box->height) / wlr_texture->height;
+	/*const*/ GLfloat texcoord[] = {
 		x2, y1, // top right
 		x1, y1, // top left
 		x2, y2, // bottom right
@@ -322,7 +327,48 @@ static bool render_subtexture_with_matrix(
 
 	glBindTexture(texture->target, 0);
 
-	pop_gles2_debug(gles2_renderer);
+	/*******************/
+	/*     Borders     */
+	/*******************/
+
+	glBindTexture(texture->target, texture->tex);
+
+	glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glUseProgram(shader->shader);
+
+	glUniformMatrix3fv(shader->proj, 1, GL_FALSE, gl_matrix);
+	glUniform1i(shader->tex, 0);
+	glUniform1f(shader->alpha, alpha);
+	glUniform1f(shader->width, display_box->width);
+	glUniform1f(shader->height, display_box->height);
+	glUniform1f(shader->cornerradius, corner_radius - 10);
+	glUniform1f(shader->border_thickness, border_thickness + 2);
+	glUniform4f(shader->color, color[0], color[1], color[2], color[3]);
+
+	x1 = (box->x - 10) / wlr_texture->width;
+	y1 = box->y / wlr_texture->height;
+	x2 = (box->x + box->width) / wlr_texture->width;
+	y2 = (box->y + box->height) / wlr_texture->height;
+	const GLfloat texcoord2[] = {
+		x2, y1, // top right
+		x1, y1, // top left
+		x2, y2, // bottom right
+		x1, y2, // bottom left
+	};
+
+	glVertexAttribPointer(shader->pos_attrib, 2, GL_FLOAT, GL_FALSE, 0, verts);
+	glVertexAttribPointer(shader->tex_attrib, 2, GL_FLOAT, GL_FALSE, 0, texcoord2);
+
+	glEnableVertexAttribArray(shader->pos_attrib);
+	glEnableVertexAttribArray(shader->tex_attrib);
+
+	//glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+	glDisableVertexAttribArray(shader->pos_attrib);
+	glDisableVertexAttribArray(shader->tex_attrib);
+
 	return true;
 }
 #endif
@@ -355,11 +401,9 @@ void sway_renderer_init(struct sway_renderer* renderer, struct sway_server* serv
 	renderer->shader_rgba.alpha = glGetUniformLocation(renderer->shader_rgba.shader, "alpha");
 	renderer->shader_rgba.width = glGetUniformLocation(renderer->shader_rgba.shader, "width");
 	renderer->shader_rgba.height = glGetUniformLocation(renderer->shader_rgba.shader, "height");
-	renderer->shader_rgba.padding_l = glGetUniformLocation(renderer->shader_rgba.shader, "padding_l");
-	renderer->shader_rgba.padding_t = glGetUniformLocation(renderer->shader_rgba.shader, "padding_t");
-	renderer->shader_rgba.padding_r = glGetUniformLocation(renderer->shader_rgba.shader, "padding_r");
-	renderer->shader_rgba.padding_b = glGetUniformLocation(renderer->shader_rgba.shader, "padding_b");
 	renderer->shader_rgba.cornerradius = glGetUniformLocation(renderer->shader_rgba.shader, "cornerradius");
+	renderer->shader_rgba.border_thickness = glGetUniformLocation(renderer->shader_rgba.shader, "border_thickness");
+	renderer->shader_rgba.color = glGetUniformLocation(renderer->shader_rgba.shader, "color");
 
 	renderer->shader_rgba.pos_attrib = glGetAttribLocation(renderer->shader_rgba.shader, "pos");
 	renderer->shader_rgba.tex_attrib = glGetAttribLocation(renderer->shader_rgba.shader, "texcoord");
@@ -374,11 +418,9 @@ void sway_renderer_init(struct sway_renderer* renderer, struct sway_server* serv
 	renderer->shader_rgbx.alpha = glGetUniformLocation(renderer->shader_rgbx.shader, "alpha");
 	renderer->shader_rgbx.width = glGetUniformLocation(renderer->shader_rgbx.shader, "width");
 	renderer->shader_rgbx.height = glGetUniformLocation(renderer->shader_rgbx.shader, "height");
-	renderer->shader_rgbx.padding_l = glGetUniformLocation(renderer->shader_rgbx.shader, "padding_l");
-	renderer->shader_rgbx.padding_t = glGetUniformLocation(renderer->shader_rgbx.shader, "padding_t");
-	renderer->shader_rgbx.padding_r = glGetUniformLocation(renderer->shader_rgbx.shader, "padding_r");
-	renderer->shader_rgbx.padding_b = glGetUniformLocation(renderer->shader_rgbx.shader, "padding_b");
 	renderer->shader_rgbx.cornerradius = glGetUniformLocation(renderer->shader_rgbx.shader, "cornerradius");
+	renderer->shader_rgbx.border_thickness = glGetUniformLocation(renderer->shader_rgbx.shader, "border_thickness");
+	renderer->shader_rgbx.color = glGetUniformLocation(renderer->shader_rgbx.shader, "color");
 
 	renderer->shader_rgbx.pos_attrib = glGetAttribLocation(renderer->shader_rgbx.shader, "pos");
 	renderer->shader_rgbx.tex_attrib = glGetAttribLocation(renderer->shader_rgbx.shader, "texcoord");
@@ -394,11 +436,9 @@ void sway_renderer_init(struct sway_renderer* renderer, struct sway_server* serv
 		renderer->shader_ext.alpha = glGetUniformLocation(renderer->shader_ext.shader, "alpha");
 		renderer->shader_ext.width = glGetUniformLocation(renderer->shader_ext.shader, "width");
 		renderer->shader_ext.height = glGetUniformLocation(renderer->shader_ext.shader, "height");
-		renderer->shader_ext.padding_l = glGetUniformLocation(renderer->shader_ext.shader, "padding_l");
-		renderer->shader_ext.padding_t = glGetUniformLocation(renderer->shader_ext.shader, "padding_t");
-		renderer->shader_ext.padding_r = glGetUniformLocation(renderer->shader_ext.shader, "padding_r");
-		renderer->shader_ext.padding_b = glGetUniformLocation(renderer->shader_ext.shader, "padding_b");
 		renderer->shader_ext.cornerradius = glGetUniformLocation(renderer->shader_ext.shader, "cornerradius");
+		renderer->shader_ext.border_thickness = glGetUniformLocation(renderer->shader_ext.shader, "border_thickness");
+		renderer->shader_ext.color = glGetUniformLocation(renderer->shader_ext.shader, "color");
 
 		renderer->shader_ext.pos_attrib = glGetAttribLocation(renderer->shader_ext.shader, "pos");
 		renderer->shader_ext.tex_attrib = glGetAttribLocation(renderer->shader_ext.shader, "texcoord");
@@ -431,8 +471,9 @@ void sway_renderer_render_texture_at(struct sway_renderer *renderer,
                                    struct wlr_texture *texture,
                                    struct wlr_box *box, double opacity,
                                    struct wlr_box *mask,
-                                   double corner_radius) {
-
+                                   double corner_radius,
+								   int border_thickness,
+								   float color[4]) {
 	int ow, oh;
 	wlr_output_transformed_resolution(output->wlr_output, &ow, &oh);
 
@@ -474,8 +515,7 @@ void sway_renderer_render_texture_at(struct sway_renderer *renderer,
 				texture,
 				&fbox, matrix, opacity,
 				box,
-				mask->x - box->x, mask->y - box->y, box->x + box->width - mask->x - mask->width, box->y + box->height - mask->y - mask->height,
-				corner_radius);
+				corner_radius, border_thickness, color);
 #else
 		wlr_render_subtexture_with_matrix(
 				renderer->wlr_renderer,
