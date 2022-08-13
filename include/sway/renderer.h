@@ -21,6 +21,7 @@ struct sway_renderer_shader {
 
     GLint width;
     GLint height;
+    GLint position;
 
     GLint border_thickness;
     GLint cornerradius;
@@ -53,6 +54,15 @@ void sway_renderer_destroy(struct sway_renderer *renderer);
 void sway_renderer_begin(struct sway_renderer *renderer, struct sway_output *output);
 void sway_renderer_end(struct sway_renderer *renderer, pixman_region32_t *damage,
                      struct sway_output *output);
+bool sway_render_subtexture_with_matrix(struct sway_renderer *renderer,
+                                        struct wlr_texture *wlr_texture,
+		                                    const struct wlr_fbox *box,
+                                        const float matrix[static 9],
+                                        float alpha,
+                                        const struct wlr_box *display_box,
+                                        float corner_radius,
+                                        int border_thickness,
+                                        float color[4]);
 void sway_renderer_render_texture_at(struct sway_renderer *renderer,
                                    struct sway_output *output,
                                    pixman_region32_t *damage,

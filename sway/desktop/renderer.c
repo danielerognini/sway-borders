@@ -35,43 +35,20 @@ const GLchar custom_tex_fragment_src_rgba[] =
 "\n"
 "uniform float width;\n"
 "uniform float height;\n"
+"uniform vec2 position;\n"
 "uniform float cornerradius;\n"
 "uniform float border_thickness;\n"
 "uniform vec4 color;\n"
 "\n"
 "void main() {\n"
-"   if(v_texcoord.x*width < cornerradius && v_texcoord.y*height < cornerradius){\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(cornerradius, cornerradius)) > cornerradius + border_thickness) discard;\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(cornerradius, cornerradius)) > cornerradius) {\n"
-"           gl_FragColor = color;\n"
-"           return;\n"
-"       }\n"
-"   }\n"
-"   if(v_texcoord.x*width > width - cornerradius && v_texcoord.y*height < cornerradius){\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(width - cornerradius, cornerradius)) > cornerradius + border_thickness) discard;\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(width - cornerradius, cornerradius)) > cornerradius) {\n"
-"           gl_FragColor = color;\n"
-"           return;\n"
-"       }\n"
-"   }\n"
-"   if(v_texcoord.x*width < cornerradius && v_texcoord.y*height > height - cornerradius){\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(cornerradius, height - cornerradius)) > cornerradius + border_thickness) discard;\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(cornerradius, height - cornerradius)) > cornerradius) {\n"
-"           gl_FragColor = color;\n"
-"           return;\n"
-"       }\n"
-"   }\n"
-"   if(v_texcoord.x*width > width - cornerradius && v_texcoord.y*height > height - cornerradius){\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(width - cornerradius, height - cornerradius)) > cornerradius + border_thickness) discard;\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(width - cornerradius, height - cornerradius)) > cornerradius) {\n"
-"           gl_FragColor = color;\n"
-"           return;\n"
-"       }\n"
-"   }\n"
+"   vec2 corner_distance = min(gl_FragCoord.xy - position, position + vec2(width, height) - gl_FragCoord.xy);\n"
 "   gl_FragColor = texture2D(tex, v_texcoord) * alpha;\n"
+"   if (max(corner_distance.x, corner_distance.y) < cornerradius) {\n"
+"		float d = cornerradius - distance(corner_distance, vec2(cornerradius, cornerradius));\n"
+"		float smooth = smoothstep(-1.0f, 1.0f, d);\n"
+"		gl_FragColor = mix(vec4(0), gl_FragColor, smooth);\n"
+"   }\n"
 "}\n";
-
-
 
 const GLchar custom_tex_fragment_src_rgbx[] =
 "precision mediump float;\n"
@@ -86,19 +63,8 @@ const GLchar custom_tex_fragment_src_rgbx[] =
 "uniform vec4 color;\n"
 "\n"
 "void main() {\n"
-"   if(v_texcoord.x*width < cornerradius && v_texcoord.y*height < cornerradius){\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(cornerradius, cornerradius)) > cornerradius) discard;\n"
-"   }\n"
-"   if(v_texcoord.x*width > width - cornerradius && v_texcoord.y*height < cornerradius){\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(width - cornerradius, cornerradius)) > cornerradius) discard;\n"
-"   }\n"
-"   if(v_texcoord.x*width < cornerradius && v_texcoord.y*height > height - cornerradius){\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(cornerradius, height - cornerradius)) > cornerradius) discard;\n"
-"   }\n"
-"   if(v_texcoord.x*width > width - cornerradius && v_texcoord.y*height > height - cornerradius){\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(width - cornerradius, height - cornerradius)) > cornerradius) discard;\n"
-"   }\n"
 "	gl_FragColor = vec4(texture2D(tex, v_texcoord).rgb, 1.0) * alpha;\n"
+"	gl_FragColor = vec4(0);\n"
 "}\n";
 
 const GLchar custom_tex_fragment_src_external[] =
@@ -114,19 +80,8 @@ const GLchar custom_tex_fragment_src_external[] =
 "uniform float cornerradius;\n"
 "\n"
 "void main() {\n"
-"   if(v_texcoord.x*width < cornerradius && v_texcoord.y*height < cornerradius){\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(cornerradius, cornerradius)) > cornerradius) discard;\n"
-"   }\n"
-"   if(v_texcoord.x*width > width - cornerradius && v_texcoord.y*height < cornerradius){\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(width - cornerradius, cornerradius)) > cornerradius) discard;\n"
-"   }\n"
-"   if(v_texcoord.x*width < cornerradius && v_texcoord.y*height > height - cornerradius){\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(cornerradius, height - cornerradius)) > cornerradius) discard;\n"
-"   }\n"
-"   if(v_texcoord.x*width > width - cornerradius && v_texcoord.y*height > height - cornerradius){\n"
-"       if(length(vec2(v_texcoord.x*width, v_texcoord.y*height) - vec2(width - cornerradius, height - cornerradius)) > cornerradius) discard;\n"
-"   }\n"
 "	gl_FragColor = texture2D(texture0, v_texcoord) * alpha;\n"
+"	gl_FragColor = vec4(0);\n"
 "}\n";
 
 static const GLfloat verts[] = {
@@ -200,47 +155,7 @@ struct wlr_gles2_texture *gles2_get_texture(
 	return (struct wlr_gles2_texture *)wlr_texture;
 }
 
-
-//static GLfloat points[] = {
-//	0.0f, 0.0f, 0.0f,  // 1
-//	1.0f, 0.0f, 0.0f,
-//	0.0f, 1.0f, 0.0f,
-//	1.0f, 1.0f, 0.0f,  // 2
-//	1.0f, 0.0f, 0.0f,
-//	0.0f, 1.0f, 0.0f,
-//	0.0f, 0.0f, 1.0f,  // 3
-//	1.0f, 0.0f, 1.0f,
-//	0.0f, 1.0f, 1.0f,
-//	1.0f, 1.0f, 1.0f,  // 4
-//	1.0f, 0.0f, 1.0f,
-//	0.0f, 1.0f, 1.0f,
-//	0.0f, 0.0f, 0.0f,  // 5
-//	0.0f, 0.0f, 1.0f,
-//	1.0f, 0.0f, 0.0f,
-//	1.0f, 0.0f, 1.0f,  // 6
-//	0.0f, 0.0f, 1.0f,
-//	1.0f, 0.0f, 0.0f,
-//	0.0f, 1.0f, 0.0f,  // 7
-//	0.0f, 1.0f, 1.0f,
-//	1.0f, 1.0f, 0.0f,
-//	1.0f, 1.0f, 1.0f,  // 8
-//	0.0f, 1.0f, 1.0f,
-//	1.0f, 1.0f, 0.0f,
-//	0.0f, 0.0f, 0.0f,  // 9
-//	0.0f, 0.0f, 1.0f,
-//	0.0f, 1.0f, 0.0f,
-//	0.0f, 1.0f, 1.0f,  // 10
-//	0.0f, 0.0f, 1.0f,
-//	0.0f, 1.0f, 0.0f,
-//	1.0f, 0.0f, 0.0f,  // 11
-//	1.0f, 0.0f, 1.0f,
-//	1.0f, 1.0f, 0.0f,
-//	1.0f, 1.0f, 1.0f,  // 12
-//	1.0f, 0.0f, 1.0f,
-//	1.0f, 1.0f, 0.0f,
-//};
-
-static bool render_subtexture_with_matrix(
+bool sway_render_subtexture_with_matrix(
 		struct sway_renderer *renderer, struct wlr_texture *wlr_texture,
 		const struct wlr_fbox *box, const float matrix[static 9],
 		float alpha, const struct wlr_box *display_box,
@@ -254,7 +169,6 @@ static bool render_subtexture_with_matrix(
 
 	switch (texture->target) {
 	case GL_TEXTURE_2D:
-		/* Same condition as below! Important! */
 		if (texture->has_alpha) {
 			shader = &renderer->shader_rgba;
 		} else {
@@ -299,8 +213,9 @@ static bool render_subtexture_with_matrix(
 	glUniform1f(shader->alpha, alpha);
 	glUniform1f(shader->width, display_box->width);
 	glUniform1f(shader->height, display_box->height);
-	glUniform1f(shader->cornerradius, corner_radius - 10);
+	glUniform1f(shader->cornerradius, corner_radius);
 	glUniform1f(shader->border_thickness, border_thickness + 2);
+	glUniform2f(shader->position, display_box->x, display_box->y);
 	glUniform4f(shader->color, color[0], color[1], color[2], color[3]);
 
 	/*const*/ GLfloat x1 = box->x / wlr_texture->width;
@@ -331,38 +246,38 @@ static bool render_subtexture_with_matrix(
 	/*     Borders     */
 	/*******************/
 
-	glBindTexture(texture->target, texture->tex);
+	// glBindTexture(texture->target, texture->tex);
 
-	glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	// glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	// glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	glUseProgram(shader->shader);
+	// glUseProgram(shader->shader);
 
-	glUniformMatrix3fv(shader->proj, 1, GL_FALSE, gl_matrix);
-	glUniform1i(shader->tex, 0);
-	glUniform1f(shader->alpha, alpha);
-	glUniform1f(shader->width, display_box->width);
-	glUniform1f(shader->height, display_box->height);
-	glUniform1f(shader->cornerradius, corner_radius - 10);
-	glUniform1f(shader->border_thickness, border_thickness + 2);
-	glUniform4f(shader->color, color[0], color[1], color[2], color[3]);
+	// glUniformMatrix3fv(shader->proj, 1, GL_FALSE, gl_matrix);
+	// glUniform1i(shader->tex, 0);
+	// glUniform1f(shader->alpha, alpha);
+	// glUniform1f(shader->width, display_box->width);
+	// glUniform1f(shader->height, display_box->height);
+	// glUniform1f(shader->cornerradius, corner_radius - 10);
+	// glUniform1f(shader->border_thickness, border_thickness + 2);
+	// glUniform4f(shader->color, color[0], color[1], color[2], color[3]);
 
-	x1 = (box->x - 10) / wlr_texture->width;
-	y1 = box->y / wlr_texture->height;
-	x2 = (box->x + box->width) / wlr_texture->width;
-	y2 = (box->y + box->height) / wlr_texture->height;
-	const GLfloat texcoord2[] = {
-		x2, y1, // top right
-		x1, y1, // top left
-		x2, y2, // bottom right
-		x1, y2, // bottom left
-	};
+	// x1 = (box->x - 10) / wlr_texture->width;
+	// y1 = box->y / wlr_texture->height;
+	// x2 = (box->x + box->width) / wlr_texture->width;
+	// y2 = (box->y + box->height) / wlr_texture->height;
+	// const GLfloat texcoord2[] = {
+	// 	x2, y1, // top right
+	// 	x1, y1, // top left
+	// 	x2, y2, // bottom right
+	// 	x1, y2, // bottom left
+	// };
 
-	glVertexAttribPointer(shader->pos_attrib, 2, GL_FLOAT, GL_FALSE, 0, verts);
-	glVertexAttribPointer(shader->tex_attrib, 2, GL_FLOAT, GL_FALSE, 0, texcoord2);
+	// glVertexAttribPointer(shader->pos_attrib, 2, GL_FLOAT, GL_FALSE, 0, verts);
+	// glVertexAttribPointer(shader->tex_attrib, 2, GL_FLOAT, GL_FALSE, 0, texcoord2);
 
-	glEnableVertexAttribArray(shader->pos_attrib);
-	glEnableVertexAttribArray(shader->tex_attrib);
+	// glEnableVertexAttribArray(shader->pos_attrib);
+	// glEnableVertexAttribArray(shader->tex_attrib);
 
 	//glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
@@ -374,15 +289,15 @@ static bool render_subtexture_with_matrix(
 #endif
 
 void sway_renderer_init(struct sway_renderer* renderer, struct sway_server* server){
-    renderer->sway_server = server;
+	renderer->sway_server = server;
 
-    renderer->wlr_renderer = server->renderer->wlr_renderer;
+	renderer->wlr_renderer = server->renderer->wlr_renderer;
 		renderer->wlr_renderer = wlr_renderer_autocreate(server->backend);
-    assert(renderer->wlr_renderer);
+	assert(renderer->wlr_renderer);
 
-    wlr_renderer_init_wl_display(renderer->wlr_renderer, server->wl_display);
+	wlr_renderer_init_wl_display(renderer->wlr_renderer, server->wl_display);
 
-    renderer->current = NULL;
+	renderer->current = NULL;
 
 #ifdef SWAY_CUSTOM_RENDERER
 	struct wlr_gles2_renderer *r =
@@ -401,6 +316,7 @@ void sway_renderer_init(struct sway_renderer* renderer, struct sway_server* serv
 	renderer->shader_rgba.alpha = glGetUniformLocation(renderer->shader_rgba.shader, "alpha");
 	renderer->shader_rgba.width = glGetUniformLocation(renderer->shader_rgba.shader, "width");
 	renderer->shader_rgba.height = glGetUniformLocation(renderer->shader_rgba.shader, "height");
+	renderer->shader_rgba.position = glGetUniformLocation(renderer->shader_rgba.shader, "position");
 	renderer->shader_rgba.cornerradius = glGetUniformLocation(renderer->shader_rgba.shader, "cornerradius");
 	renderer->shader_rgba.border_thickness = glGetUniformLocation(renderer->shader_rgba.shader, "border_thickness");
 	renderer->shader_rgba.color = glGetUniformLocation(renderer->shader_rgba.shader, "color");
@@ -449,41 +365,41 @@ void sway_renderer_init(struct sway_renderer* renderer, struct sway_server* serv
 }
 
 void sway_renderer_destroy(struct sway_renderer* renderer){
-    wlr_renderer_destroy(renderer->wlr_renderer);
+	wlr_renderer_destroy(renderer->wlr_renderer);
 }
 
 void sway_renderer_begin(struct sway_renderer* renderer, struct sway_output* output){
 	wlr_renderer_begin(renderer->wlr_renderer, output->wlr_output->width, output->wlr_output->height);
-    renderer->current = output;
+	renderer->current = output;
 }
 
 void sway_renderer_end(struct sway_renderer* renderer, pixman_region32_t* damage, struct sway_output* output){
-    wlr_renderer_scissor(renderer->wlr_renderer, NULL);
-    wlr_output_render_software_cursors(output->wlr_output, damage);
+	wlr_renderer_scissor(renderer->wlr_renderer, NULL);
+	wlr_output_render_software_cursors(output->wlr_output, damage);
 	wlr_renderer_end(renderer->wlr_renderer);
 
-    renderer->current = NULL;
+	renderer->current = NULL;
 }
 
 void sway_renderer_render_texture_at(struct sway_renderer *renderer,
-																	 struct sway_output *output,
-                                   pixman_region32_t *damage,
-                                   struct wlr_texture *texture,
-                                   struct wlr_box *box, double opacity,
-                                   struct wlr_box *mask,
-                                   double corner_radius,
-								   int border_thickness,
-								   float color[4]) {
+		struct sway_output *output,
+		pixman_region32_t *damage,
+		struct wlr_texture *texture,
+		struct wlr_box *box, double opacity,
+		struct wlr_box *mask,
+		double corner_radius,
+		int border_thickness,
+		float color[4]) {
 	int ow, oh;
 	wlr_output_transformed_resolution(output->wlr_output, &ow, &oh);
 
 	enum wl_output_transform transform =
 		wlr_output_transform_invert(output->wlr_output->transform);
 
-    float matrix[9];
-    wlr_matrix_project_box(matrix, box,
-            WL_OUTPUT_TRANSFORM_NORMAL, 0,
-            output->wlr_output->transform_matrix);
+	float matrix[9];
+	wlr_matrix_project_box(matrix, box,
+			WL_OUTPUT_TRANSFORM_NORMAL, 0,
+			output->wlr_output->transform_matrix);
 
 	struct wlr_fbox fbox = {
 		.x = 0,
@@ -496,21 +412,21 @@ void sway_renderer_render_texture_at(struct sway_renderer *renderer,
 	int nrects;
 	pixman_box32_t* rects = pixman_region32_rectangles(damage, &nrects);
 	for(int i=0; i<nrects; i++){
-        struct wlr_box damage_box = {
-            .x = rects[i].x1,
-            .y = rects[i].y1,
-            .width = rects[i].x2 - rects[i].x1,
-            .height = rects[i].y2 - rects[i].y1
-        };
+		struct wlr_box damage_box = {
+			.x = rects[i].x1,
+			.y = rects[i].y1,
+			.width = rects[i].x2 - rects[i].x1,
+			.height = rects[i].y2 - rects[i].y1
+		};
 		struct wlr_box inters;
 		wlr_box_intersection(&inters, box, &damage_box);
 		if(wlr_box_empty(&inters)) continue;
 
 		wlr_box_transform(&inters, &inters, transform, ow, oh);
-        wlr_renderer_scissor(renderer->wlr_renderer, &inters);
+		wlr_renderer_scissor(renderer->wlr_renderer, &inters);
 
 #ifdef SWAY_CUSTOM_RENDERER
-		render_subtexture_with_matrix(
+		sway_render_subtexture_with_matrix(
 				renderer,
 				texture,
 				&fbox, matrix, opacity,

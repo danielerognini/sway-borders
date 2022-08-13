@@ -104,7 +104,7 @@ static void set_scale_filter(struct wlr_output *wlr_output,
 static void render_texture(struct wlr_output *wlr_output,
 		pixman_region32_t *output_damage, struct wlr_texture *texture,
 		const struct wlr_fbox *src_box, struct wlr_box *dst_box,
-		const float matrix[static 9], float alpha) {
+		const float matrix[static 9], float alpha, int border_thickness, float color[4]) {
 	struct wlr_renderer *renderer = wlr_output->renderer;
 	struct sway_output *output = wlr_output->data;
 
@@ -132,8 +132,8 @@ static void render_texture(struct wlr_output *wlr_output,
 			//};
 			//sway_renderer_render_texture_at(output->server->renderer, output, &damage, texture,
 			//		dst_box, alpha, &mask, 50);
-			wlr_render_subtexture_with_matrix(renderer, texture, src_box, matrix, alpha);
-			//sway_log(SWAY_ERROR, "dafuq");
+			//wlr_render_subtexture_with_matrix(renderer, texture, src_box, matrix, alph
+			sway_render_subtexture_with_matrix(server.renderer, texture, src_box, matrix, alpha, dst_box, 50, border_thickness, color);
 		} else {
 			wlr_render_texture_with_matrix(renderer, texture, matrix, alpha);
 		}
@@ -312,7 +312,7 @@ static void render_view_popups(struct sway_view *view,
 }
 
 static void render_saved_view(struct sway_view *view,
-		struct sway_output *output, pixman_region32_t *damage, float alpha) {
+		struct sway_output *output, pixman_region32_t *damage, float alpha, int border_thickness, float color[4]) {
 	struct wlr_output *wlr_output = output->wlr_output;
 
 	if (wl_list_empty(&view->saved_buffers)) {
@@ -364,7 +364,7 @@ static void render_saved_view(struct sway_view *view,
 		scale_box(&dst_box, wlr_output->scale);
 
 		render_texture(wlr_output, damage, saved_buf->buffer->texture,
-			&saved_buf->source_box, &dst_box, matrix, alpha);
+			&saved_buf->source_box, &dst_box, matrix, alpha, border_thickness, color);
 	}
 
 	// FIXME: we should set the surface that this saved buffer originates from
@@ -380,7 +380,7 @@ static void render_view(struct sway_output *output, pixman_region32_t *damage,
 	struct sway_view *view = con->view;
 	struct sway_container_state *state = &con->current;
 	if (!wl_list_empty(&view->saved_buffers)) {
-		render_saved_view(view, output, damage, view->container->alpha);
+		render_saved_view(view, output, damage, view->container->alpha, state->border_thickness, colors->border);
 	} else if (view->surface) {
 		render_view_toplevels(view, output, damage, view->container->alpha, state->border_thickness, colors->border);
 	}
@@ -544,8 +544,9 @@ static void render_titlebar(struct sway_output *output,
 		if (ob_inner_width < texture_box.width) {
 			texture_box.width = ob_inner_width;
 		}
+		float border_color[4] = {0, 0, 0, 0};
 		render_texture(output->wlr_output, output_damage, marks_texture,
-			NULL, &texture_box, matrix, con->alpha);
+			NULL, &texture_box, matrix, con->alpha, 0, border_color);
 
 		// Padding above
 		memcpy(&color, colors->background, sizeof(float) * 4);
@@ -620,8 +621,9 @@ static void render_titlebar(struct sway_output *output,
 			texture_box.width = ob_inner_width - ob_marks_width;
 		}
 
+		float border_color[4] = {0, 0, 0, 0};
 		render_texture(output->wlr_output, output_damage, title_texture,
-			NULL, &texture_box, matrix, con->alpha);
+			NULL, &texture_box, matrix, con->alpha, 0, border_color);
 
 		// Padding above
 		memcpy(&color, colors->background, sizeof(float) * 4);
@@ -1131,10 +1133,10 @@ void output_render(struct sway_output *output, struct timespec *when,
 		}
 
 		if (fullscreen_con->view) {
+			float color[4] = {0, 0, 0, 0};
 			if (!wl_list_empty(&fullscreen_con->view->saved_buffers)) {
-				render_saved_view(fullscreen_con->view, output, damage, 1.0f);
+				render_saved_view(fullscreen_con->view, output, damage, 1.0f, 0, color);
 			} else if (fullscreen_con->view->surface) {
-				float color[4] = {0, 0, 0, 0};
 				render_view_toplevels(fullscreen_con->view,
 						output, damage, 1.0f, 0, color);
 			}
