@@ -19,6 +19,7 @@
 #include "sway/input/tablet.h"
 #include "sway/tree/root.h"
 #include "wlr-layer-shell-unstable-v1-protocol.h"
+#include <pango/pangocairo.h>
 
 // TODO: Refactor this shit
 
@@ -248,12 +249,6 @@ struct seat_config {
 	} xcursor_theme;
 };
 
-enum config_dpms {
-	DPMS_IGNORE,
-	DPMS_ON,
-	DPMS_OFF,
-};
-
 enum scale_filter_mode {
 	SCALE_FILTER_DEFAULT, // the default is currently smart
 	SCALE_FILTER_LINEAR,
@@ -275,6 +270,7 @@ enum render_bit_depth {
 struct output_config {
 	char *name;
 	int enabled;
+	int power;
 	int width, height;
 	float refresh_rate;
 	int custom_mode;
@@ -291,7 +287,6 @@ struct output_config {
 	char *background;
 	char *background_option;
 	char *background_fallback;
-	enum config_dpms dpms_state;
 };
 
 /**
@@ -511,7 +506,8 @@ struct sway_config {
 	char *floating_scroll_right_cmd;
 	enum sway_container_layout default_orientation;
 	enum sway_container_layout default_layout;
-	char *font;
+	char *font; // Used for IPC.
+	PangoFontDescription *font_description; // Used internally for rendering and validating.
 	int font_height;
 	int font_baseline;
 	bool pango_markup;

@@ -32,7 +32,7 @@ struct sway_output {
 	int width, height; // transformed buffer size
 	enum wl_output_subpixel detected_subpixel;
 	enum scale_filter_mode scale_filter;
-	// last applied mode when the output is DPMS'ed
+	// last applied mode when the output is powered off
 	struct wlr_output_mode *current_mode;
 
 	bool enabling, enabled;
@@ -55,6 +55,12 @@ struct sway_output {
 	uint32_t refresh_nsec;
 	int max_render_time; // In milliseconds
 	struct wl_event_source *repaint_timer;
+};
+
+struct sway_output_non_desktop {
+	struct wlr_output *wlr_output;
+
+	struct wl_listener destroy;
 };
 
 struct sway_output *output_create(struct wlr_output *wlr_output);
@@ -176,5 +182,7 @@ void handle_output_manager_test(struct wl_listener *listener, void *data);
 
 void handle_output_power_manager_set_mode(struct wl_listener *listener,
 	void *data);
+
+struct sway_output_non_desktop *output_non_desktop_create(struct wlr_output *wlr_output);
 
 #endif

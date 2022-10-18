@@ -446,6 +446,7 @@ static void handle_button(struct sway_seat *seat, uint32_t time_msec,
 			state == WLR_BUTTON_PRESSED) {
 		// Via border
 		if (button == BTN_LEFT && resize_edge != WLR_EDGE_NONE) {
+			seat_set_focus_container(seat, cont);
 			seatop_begin_resize_floating(seat, cont, resize_edge);
 			return;
 		}
@@ -460,6 +461,7 @@ static void handle_button(struct sway_seat *seat, uint32_t time_msec,
 				WLR_EDGE_RIGHT : WLR_EDGE_LEFT;
 			edge |= cursor->cursor->y > floater->pending.y + floater->pending.height / 2 ?
 				WLR_EDGE_BOTTOM : WLR_EDGE_TOP;
+			seat_set_focus_container(seat, floater);
 			seatop_begin_resize_floating(seat, floater, edge);
 			return;
 		}
@@ -708,6 +710,7 @@ static void handle_pointer_axis(struct sway_seat *seat,
 
 	// Scrolling on a tabbed or stacked title bar (handled as press event)
 	if (!handled && (on_titlebar || on_titlebar_border)) {
+		struct sway_node *new_focus;
 		enum sway_container_layout layout = container_parent_layout(cont);
 		if (layout == L_TABBED || layout == L_STACKED) {
 			struct sway_node *tabcontainer = node_get_parent(node);
@@ -715,7 +718,7 @@ static void handle_pointer_axis(struct sway_seat *seat,
 				seat_get_active_tiling_child(seat, tabcontainer);
 			list_t *siblings = container_get_siblings(cont);
 			int desired = list_find(siblings, active->sway_container) +
-				round(scroll_factor * event->delta_discrete);
+				round(scroll_factor * event->delta_discrete / WLR_POINTER_AXIS_DISCRETE_STEP);
 			if (desired < 0) {
 				desired = 0;
 			} else if (desired >= siblings->length) {
@@ -724,14 +727,16 @@ static void handle_pointer_axis(struct sway_seat *seat,
 
 			struct sway_container *new_sibling_con = siblings->items[desired];
 			struct sway_node *new_sibling = &new_sibling_con->node;
-			struct sway_node *new_focus =
-				seat_get_focus_inactive(seat, new_sibling);
 			// Use the focused child of the tabbed/stacked container, not the
 			// container the user scrolled on.
-			seat_set_focus(seat, new_focus);
-			transaction_commit_dirty();
-			handled = true;
+			new_focus = seat_get_focus_inactive(seat, new_sibling);
+		} else {
+			new_focus = seat_get_focus_inactive(seat, &cont->node);
 		}
+
+		seat_set_focus(seat, new_focus);
+		transaction_commit_dirty();
+		handled = true;
 	}
 
 	// Handle mouse bindings - x11 mouse buttons 4-7 - release event
