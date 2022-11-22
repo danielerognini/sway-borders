@@ -72,6 +72,7 @@ struct sway_drag_icon {
 	struct wl_list link; // sway_root::drag_icons
 
 	double x, y; // in layout-local coordinates
+	int dx, dy; // offset in surface-local coordinates
 
 	struct wl_listener surface_commit;
 	struct wl_listener map;
@@ -200,10 +201,6 @@ struct sway_workspace *seat_get_focused_workspace(struct sway_seat *seat);
 struct sway_workspace *seat_get_last_known_workspace(struct sway_seat *seat);
 
 struct sway_container *seat_get_focused_container(struct sway_seat *seat);
-
-// Force focus to a particular surface that is not part of the workspace
-// hierarchy (used for lockscreen)
-void sway_force_focus(struct wlr_surface *surface);
 
 /**
  * Return the last container to be focused for the seat (or the most recently

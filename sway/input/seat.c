@@ -214,15 +214,6 @@ static void seat_send_focus(struct sway_node *node, struct sway_seat *seat) {
 	}
 }
 
-void sway_force_focus(struct wlr_surface *surface) {
-	struct sway_seat *seat;
-	wl_list_for_each(seat, &server.input->seats, link) {
-		seat_keyboard_notify_enter(seat, surface);
-		seat_tablet_pads_notify_enter(seat, surface);
-		sway_input_method_relay_set_focus(&seat->im_relay, surface);
-	}
-}
-
 void seat_for_each_node(struct sway_seat *seat,
 		void (*f)(struct sway_node *node, void *data), void *data) {
 	struct sway_seat_node *current = NULL;
@@ -391,8 +382,8 @@ void drag_icon_update_position(struct sway_drag_icon *icon) {
 	case WLR_DRAG_GRAB_KEYBOARD:
 		return;
 	case WLR_DRAG_GRAB_KEYBOARD_POINTER:
-		icon->x = cursor->x + wlr_icon->surface->sx;
-		icon->y = cursor->y + wlr_icon->surface->sy;
+		icon->x = cursor->x + icon->dx;
+		icon->y = cursor->y + icon->dy;
 		break;
 	case WLR_DRAG_GRAB_KEYBOARD_TOUCH:;
 		struct wlr_touch_point *point =
@@ -400,8 +391,8 @@ void drag_icon_update_position(struct sway_drag_icon *icon) {
 		if (point == NULL) {
 			return;
 		}
-		icon->x = seat->touch_x + wlr_icon->surface->sx;
-		icon->y = seat->touch_y + wlr_icon->surface->sy;
+		icon->x = seat->touch_x + icon->dx;
+		icon->y = seat->touch_y + icon->dy;
 	}
 
 	drag_icon_damage_whole(icon);
@@ -411,6 +402,9 @@ static void drag_icon_handle_surface_commit(struct wl_listener *listener,
 		void *data) {
 	struct sway_drag_icon *icon =
 		wl_container_of(listener, icon, surface_commit);
+	struct wlr_drag_icon *wlr_icon = icon->wlr_drag_icon;
+	icon->dx += wlr_icon->surface->current.dx;
+	icon->dy += wlr_icon->surface->current.dy;
 	drag_icon_update_position(icon);
 }
 
@@ -1143,15 +1137,7 @@ void seat_set_raw_focus(struct sway_seat *seat, struct sway_node *node) {
 	}
 }
 
-void seat_set_focus(struct sway_seat *seat, struct sway_node *node) {
-	if (seat->focused_layer) {
-		struct wlr_layer_surface_v1 *layer = seat->focused_layer;
-		seat_set_focus_layer(seat, NULL);
-		seat_set_focus(seat, node);
-		seat_set_focus_layer(seat, layer);
-		return;
-	}
-
+static void seat_set_workspace_focus(struct sway_seat *seat, struct sway_node *node) {
 	struct sway_node *last_focus = seat_get_focus(seat);
 	if (last_focus == node) {
 		return;
@@ -1182,11 +1168,6 @@ void seat_set_focus(struct sway_seat *seat, struct sway_node *node) {
 
 	// Deny setting focus to a workspace node when using fullscreen global
 	if (root->fullscreen_global && !container && new_workspace) {
-		return;
-	}
-
-	// Deny setting focus when an input grab or lockscreen is active
-	if (container && container->view && !seat_is_input_allowed(seat, container->view->surface)) {
 		return;
 	}
 
@@ -1286,6 +1267,20 @@ void seat_set_focus(struct sway_seat *seat, struct sway_node *node) {
 		// When smart gaps is on, gaps may change when the focus changes so
 		// the workspace needs to be arranged
 		arrange_workspace(new_workspace);
+	}
+}
+
+void seat_set_focus(struct sway_seat *seat, struct sway_node *node) {
+	if (seat->focused_layer) {
+		struct wlr_layer_surface_v1 *layer = seat->focused_layer;
+		seat_set_focus_layer(seat, NULL);
+		seat_set_workspace_focus(seat, node);
+		seat_set_focus_layer(seat, layer);
+	} else {
+		seat_set_workspace_focus(seat, node);
+	}
+	if (server.session_lock.locked) {
+		seat_set_focus_surface(seat, server.session_lock.focused, false);
 	}
 }
 
