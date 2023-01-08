@@ -9,6 +9,7 @@
 #include <wlr/types/wlr_buffer.h>
 #include <wlr/types/wlr_damage_ring.h>
 #include <wlr/types/wlr_matrix.h>
+#include <wlr/types/wlr_output_damage.h>
 #include <wlr/types/wlr_output_layout.h>
 #include <wlr/types/wlr_output.h>
 #include <wlr/types/wlr_compositor.h>
@@ -732,7 +733,7 @@ static void render_border_texture(struct sway_output *output,
 
 	pixman_region32_t texture_damage;
 	pixman_region32_init_rect(&texture_damage, box.x, box.y, box.width, box.height);
-	wlr_output_damage_add(output->damage, &texture_damage);
+	wlr_output_damage_add(wlr_output_damage_create(output->wlr_output), &texture_damage);
 	render_texture(wlr_output, damage, texture, &src_box, &box, matrix, alpha);
 }
 
